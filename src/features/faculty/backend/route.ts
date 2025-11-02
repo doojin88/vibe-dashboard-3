@@ -167,7 +167,7 @@ export function registerFacultyRoutes(app: Hono<AppEnv>) {
       .not('visiting_faculty', 'is', null)
       .order('evaluation_year', { ascending: false });
 
-    const years = Array.from(new Set(yearsData?.map((item) => item.evaluation_year) || []));
+    const years = Array.from(new Set((yearsData || []).map((item: any) => item.evaluation_year)));
 
     // 단과대학 및 학과 목록
     const { data: deptsData } = await supabase
@@ -175,7 +175,7 @@ export function registerFacultyRoutes(app: Hono<AppEnv>) {
       .select('college_name, department_name')
       .order('college_name, department_name');
 
-    const colleges = Array.from(new Set(deptsData?.map((item) => item.college_name) || []));
+    const colleges = Array.from(new Set((deptsData || []).map((item: any) => item.college_name)));
 
     return c.json({
       years,

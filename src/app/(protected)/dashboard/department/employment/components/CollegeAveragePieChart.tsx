@@ -67,13 +67,12 @@ export function CollegeAveragePieChart({ data, isLoading }: CollegeAveragePieCha
               cx="50%"
               cy="50%"
               outerRadius={80}
-              label={(entry) => `${entry.name}: ${entry.value.toFixed(1)}%`}
             >
               {chartData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
               ))}
             </Pie>
-            <Tooltip formatter={(value) => `${value}%`} />
+            <Tooltip formatter={(value: number) => `${value.toFixed(1)}%`} />
             <Legend />
           </PieChart>
         </ResponsiveContainer>

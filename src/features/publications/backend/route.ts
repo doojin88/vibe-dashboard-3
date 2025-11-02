@@ -123,15 +123,15 @@ export function registerPublicationRoutes(app: Hono<AppEnv>) {
 
     // KPI 계산
     const totalCount = data?.length || 0;
-    const scieCount = data?.filter((p) => p.journal_grade === 'SCIE').length || 0;
-    const kciCount = data?.filter((p) => p.journal_grade === 'KCI').length || 0;
+    const scieCount = (data || []).filter((p: any) => p.journal_grade === 'SCIE').length;
+    const kciCount = (data || []).filter((p: any) => p.journal_grade === 'KCI').length;
 
-    const impactFactors = data
-      ?.filter((p) => p.impact_factor !== null)
-      .map((p) => p.impact_factor as number) || [];
+    const impactFactors = (data || [])
+      .filter((p: any) => p.impact_factor !== null)
+      .map((p: any) => p.impact_factor as number);
 
     const avgImpactFactor = impactFactors.length > 0
-      ? impactFactors.reduce((sum, val) => sum + val, 0) / impactFactors.length
+      ? impactFactors.reduce((sum: number, val: number) => sum + val, 0) / impactFactors.length
       : null;
 
     return c.json({
@@ -164,7 +164,7 @@ export function registerPublicationRoutes(app: Hono<AppEnv>) {
     // 연도별 집계
     const yearMap = new Map<number, { total: number; scie: number; kci: number }>();
 
-    data?.forEach((pub) => {
+    (data || []).forEach((pub: any) => {
       const year = new Date(pub.publication_date).getFullYear();
       const entry = yearMap.get(year) || { total: 0, scie: 0, kci: 0 };
 
@@ -314,7 +314,7 @@ export function registerPublicationRoutes(app: Hono<AppEnv>) {
     // 연도별 평균 Impact Factor 계산
     const yearMap = new Map<number, number[]>();
 
-    data?.forEach((pub) => {
+    (data || []).forEach((pub: any) => {
       if (pub.impact_factor !== null) {
         const year = new Date(pub.publication_date).getFullYear();
         const impacts = yearMap.get(year) || [];

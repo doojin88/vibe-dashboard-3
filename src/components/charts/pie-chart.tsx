@@ -46,7 +46,6 @@ export function PieChart({
           cy="50%"
           outerRadius={100}
           fill="#8884d8"
-          label={showPercentage ? ({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%` : undefined}
           labelLine={showPercentage}
         >
           {data.map((_, index) => (

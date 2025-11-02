@@ -31,7 +31,7 @@ export function registerDashboardRoutes(app: Hono<AppEnv>) {
           .limit(1)
           .single();
 
-        currentYear = latestYear?.evaluation_year ?? new Date().getFullYear();
+        currentYear = latestYear ? (latestYear as any).evaluation_year : new Date().getFullYear();
       }
 
       const previousYear = currentYear - 1;
@@ -157,7 +157,7 @@ export function registerDashboardRoutes(app: Hono<AppEnv>) {
         .limit(1)
         .single();
 
-      const currentYear = latestYear?.evaluation_year || new Date().getFullYear();
+      const currentYear = latestYear ? (latestYear as any).evaluation_year : new Date().getFullYear();
       const yearRange = Array.from({ length: years }, (_, i) => currentYear - i).reverse();
 
       // 연도별 취업률 및 기술이전 수입
@@ -167,16 +167,16 @@ export function registerDashboardRoutes(app: Hono<AppEnv>) {
         .in('evaluation_year', yearRange);
 
       const employmentRate = yearRange.map(year => {
-        const yearData = kpiData?.filter(d => d.evaluation_year === year) || [];
+        const yearData = (kpiData || []).filter((d: any) => d.evaluation_year === year);
         const value = yearData.length > 0
-          ? yearData.reduce((sum, d) => sum + (d.employment_rate || 0), 0) / yearData.length
+          ? yearData.reduce((sum: number, d: any) => sum + (d.employment_rate || 0), 0) / yearData.length
           : 0;
         return { year, value };
       });
 
       const techTransferIncome = yearRange.map(year => {
-        const yearData = kpiData?.filter(d => d.evaluation_year === year) || [];
-        const value = yearData.reduce((sum, d) => sum + (d.tech_transfer_income || 0), 0);
+        const yearData = (kpiData || []).filter((d: any) => d.evaluation_year === year);
+        const value = yearData.reduce((sum: number, d: any) => sum + (d.tech_transfer_income || 0), 0);
         return { year, value };
       });
 
@@ -186,16 +186,16 @@ export function registerDashboardRoutes(app: Hono<AppEnv>) {
         .select('publication_date, journal_grade');
 
       const publications = yearRange.map(year => {
-        const yearPubs = pubData?.filter(p => {
+        const yearPubs = (pubData || []).filter((p: any) => {
           const pubYear = new Date(p.publication_date).getFullYear();
           return pubYear === year;
-        }) || [];
+        });
 
         return {
           year,
           total: yearPubs.length,
-          scie: yearPubs.filter(p => p.journal_grade === 'SCIE').length,
-          kci: yearPubs.filter(p => p.journal_grade === 'KCI').length,
+          scie: yearPubs.filter((p: any) => p.journal_grade === 'SCIE').length,
+          kci: yearPubs.filter((p: any) => p.journal_grade === 'KCI').length,
         };
       });
 
@@ -227,7 +227,7 @@ export function registerDashboardRoutes(app: Hono<AppEnv>) {
           .limit(1)
           .single();
 
-        currentYear = latestYear?.evaluation_year || new Date().getFullYear();
+        currentYear = latestYear ? (latestYear as any).evaluation_year : new Date().getFullYear();
       }
 
       // 단과대학별 집계
@@ -252,7 +252,7 @@ export function registerDashboardRoutes(app: Hono<AppEnv>) {
         researchBudget: number;
       }>();
 
-      departments?.forEach(dept => {
+      (departments || []).forEach((dept: any) => {
         if (!collegeMap.has(dept.college_name)) {
           collegeMap.set(dept.college_name, {
             name: dept.college_name,
@@ -265,14 +265,14 @@ export function registerDashboardRoutes(app: Hono<AppEnv>) {
         college.departmentCount++;
 
         // 취업률 추가
-        const kpi = kpiData?.find(k => k.department_id === dept.id);
+        const kpi = (kpiData || []).find((k: any) => k.department_id === dept.id) as any;
         if (kpi && kpi.employment_rate !== null) {
           college.employmentRates.push(kpi.employment_rate);
         }
 
         // 연구비 추가
-        const budget = researchData?.filter(r => r.department_id === dept.id)
-          .reduce((sum, r) => sum + (r.total_budget || 0), 0) || 0;
+        const budget = (researchData || []).filter((r: any) => r.department_id === dept.id)
+          .reduce((sum: number, r: any) => sum + (r.total_budget || 0), 0);
         college.researchBudget += budget;
       });
 

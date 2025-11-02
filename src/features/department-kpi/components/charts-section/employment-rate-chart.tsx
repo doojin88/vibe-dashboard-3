@@ -52,7 +52,7 @@ export function EmploymentRateChart({
           />
           <Bar
             dataKey="employment_rate"
-            onClick={(data) => onBarClick?.(data.department)}
+            onClick={(data: any) => onBarClick?.(data.department)}
             cursor="pointer"
           >
             {data.map((entry, index) => (

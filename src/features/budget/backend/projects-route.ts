@@ -78,7 +78,7 @@ export function registerBudgetProjectsRoutes(app: Hono<AppEnv>) {
 
     // 각 과제별 집행 정보 집계
     const projectsWithExecution = await Promise.all(
-      (projects || []).map(async (project) => {
+      (projects || []).map(async (project: any) => {
         let execQuery = supabase
           .from('budget_executions')
           .select('execution_amount, status')
@@ -98,8 +98,8 @@ export function registerBudgetProjectsRoutes(app: Hono<AppEnv>) {
 
         const { data: executions } = await execQuery;
 
-        const executed_amount = executions?.reduce(
-          (sum, exec) => sum + exec.execution_amount,
+        const executed_amount = (executions || []).reduce(
+          (sum: number, exec: any) => sum + exec.execution_amount,
           0
         ) ?? 0;
 
@@ -110,7 +110,7 @@ export function registerBudgetProjectsRoutes(app: Hono<AppEnv>) {
         // 전체 상태 결정
         let status: '집행완료' | '처리중' | '미집행' = '미집행';
         if (executions && executions.length > 0) {
-          const hasProcessing = executions.some(e => e.status === '처리중');
+          const hasProcessing = (executions as any[]).some((e: any) => e.status === '처리중');
           status = hasProcessing ? '처리중' : '집행완료';
         }
 
@@ -176,7 +176,7 @@ export function registerBudgetProjectsRoutes(app: Hono<AppEnv>) {
 
     const years = Array.from(
       new Set(
-        yearData?.map((row) => new Date(row.execution_date).getFullYear()) ?? []
+        (yearData || []).map((row: any) => new Date(row.execution_date).getFullYear())
       )
     ).sort((a, b) => b - a);
 
@@ -193,7 +193,7 @@ export function registerBudgetProjectsRoutes(app: Hono<AppEnv>) {
       .order('funding_agency');
 
     const funding_agencies = Array.from(
-      new Set(agencyData?.map((row) => row.funding_agency) ?? [])
+      new Set((agencyData || []).map((row: any) => row.funding_agency))
     ).sort();
 
     // 연구책임자 목록
@@ -203,7 +203,7 @@ export function registerBudgetProjectsRoutes(app: Hono<AppEnv>) {
       .order('principal_investigator');
 
     const principal_investigators = Array.from(
-      new Set(piData?.map((row) => row.principal_investigator) ?? [])
+      new Set((piData || []).map((row: any) => row.principal_investigator))
     ).sort();
 
     return c.json({
@@ -250,7 +250,7 @@ export function registerBudgetProjectsRoutes(app: Hono<AppEnv>) {
     }
 
     // 집행항목별 집계
-    const byItem = (executions || []).reduce((acc, exec) => {
+    const byItem = (executions || []).reduce((acc: any[], exec: any) => {
       const existing = acc.find((item) => item.item === exec.execution_item);
       if (existing) {
         existing.amount += exec.execution_amount;
@@ -266,7 +266,7 @@ export function registerBudgetProjectsRoutes(app: Hono<AppEnv>) {
     }, [] as { item: string; amount: number; count: number }[]);
 
     // 상태별 집계
-    const byStatus = (executions || []).reduce((acc, exec) => {
+    const byStatus = (executions || []).reduce((acc: any[], exec: any) => {
       const existing = acc.find((item) => item.status === exec.status);
       if (existing) {
         existing.amount += exec.execution_amount;
@@ -282,7 +282,7 @@ export function registerBudgetProjectsRoutes(app: Hono<AppEnv>) {
     }, [] as { status: string; amount: number; count: number }[]);
 
     const total_executed = (executions || []).reduce(
-      (sum, exec) => sum + exec.execution_amount,
+      (sum: number, exec: any) => sum + exec.execution_amount,
       0
     );
 

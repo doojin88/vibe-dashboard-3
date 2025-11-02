@@ -26,9 +26,9 @@ export default function FacultyStatusPage() {
     const deptParam = searchParams.get('dept');
 
     return {
-      evaluation_year: yearParam ? yearParam.split(',').map(Number) : null,
-      college_name: collegeParam ? collegeParam.split(',') : null,
-      department_name: deptParam ? deptParam.split(',') : null,
+      evaluation_year: yearParam ? (yearParam.split(',').map(Number) as number[]) : null,
+      college_name: collegeParam ? (collegeParam.split(',') as string[]) : null,
+      department_name: deptParam ? (deptParam.split(',') as string[]) : null,
     };
   });
 
@@ -235,7 +235,6 @@ export default function FacultyStatusPage() {
               xAxisKey="evaluation_year"
               dataKeys={['total_full_time', 'total_visiting']}
               colors={['#3b82f6', '#f97316']}
-              labels={['전임교원', '초빙교원']}
             />
           ) : (
             <EmptyState title="데이터가 없습니다" />

@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-export type FilterValue = string | number | null;
+export type FilterValue = string | number | string[] | number[] | null;
 
 export type FilterOption = {
   label: string;
