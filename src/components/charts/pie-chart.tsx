@@ -1,14 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import {
-  PieChart as RechartsPieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts';
+import dynamic from 'next/dynamic';
 
 type PieChartProps = {
   data: Record<string, unknown>[];
@@ -29,43 +21,57 @@ const DEFAULT_COLORS = [
   '#f97316', // orange
 ];
 
-export function PieChart({
-  data,
-  dataKey,
-  nameKey,
-  showPercentage = false,
-  colors = DEFAULT_COLORS,
-}: PieChartProps) {
-  const [isMounted, setIsMounted] = useState(false);
+const PieChartInternal = dynamic<PieChartProps>(
+  () =>
+    import('recharts').then((recharts) => {
+      const {
+        PieChart: RechartsPieChart,
+        Pie,
+        Cell,
+        Tooltip,
+        Legend,
+        ResponsiveContainer,
+      } = recharts;
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+      function PieChartComponent({
+        data,
+        dataKey,
+        nameKey,
+        showPercentage = false,
+        colors = DEFAULT_COLORS,
+      }: PieChartProps) {
+        return (
+          <ResponsiveContainer width="100%" height={300}>
+            <RechartsPieChart>
+              <Pie
+                data={data}
+                dataKey={dataKey}
+                nameKey={nameKey}
+                cx="50%"
+                cy="50%"
+                outerRadius={100}
+                fill="#8884d8"
+                labelLine={showPercentage}
+              >
+                {data.map((_, index) => (
+                  <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend />
+            </RechartsPieChart>
+          </ResponsiveContainer>
+        );
+      }
 
-  if (!isMounted) {
-    return <div className="h-[300px] bg-muted animate-pulse rounded" />;
+      return { default: PieChartComponent };
+    }),
+  {
+    ssr: false,
+    loading: () => <div className="h-[300px] bg-muted animate-pulse rounded" />,
   }
+);
 
-  return (
-    <ResponsiveContainer width="100%" height={300}>
-      <RechartsPieChart>
-        <Pie
-          data={data}
-          dataKey={dataKey}
-          nameKey={nameKey}
-          cx="50%"
-          cy="50%"
-          outerRadius={100}
-          fill="#8884d8"
-          labelLine={showPercentage}
-        >
-          {data.map((_, index) => (
-            <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
-          ))}
-        </Pie>
-        <Tooltip />
-        <Legend />
-      </RechartsPieChart>
-    </ResponsiveContainer>
-  );
+export function PieChart(props: PieChartProps) {
+  return <PieChartInternal {...props} />;
 }

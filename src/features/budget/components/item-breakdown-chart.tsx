@@ -1,14 +1,7 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-  Legend,
-} from 'recharts';
 import { formatBudget, formatPercentage } from '@/lib/utils/number';
 import type { ItemBreakdown } from '../types';
 
@@ -26,6 +19,61 @@ const COLORS = [
   '#83a6ed',
   '#8dd1e1',
 ];
+
+const ChartComponent = dynamic<ItemBreakdownChartProps>(
+  () =>
+    import('recharts').then((recharts) => {
+      const {
+        PieChart,
+        Pie,
+        Cell,
+        ResponsiveContainer,
+        Tooltip,
+        Legend,
+      } = recharts;
+
+      function ItemBreakdownChartComponent({ data }: ItemBreakdownChartProps) {
+        const chartData = Object.entries(data).map(([name, value]) => ({
+          name,
+          amount: value.amount,
+          percentage: value.percentage,
+        }));
+
+        return (
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={chartData}
+                cx="50%"
+                cy="50%"
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="amount"
+              >
+                {chartData.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
+                ))}
+              </Pie>
+              <Tooltip
+                formatter={(value: number) => formatBudget(value)}
+                labelFormatter={(label) => `${label}`}
+              />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        );
+      }
+
+      return { default: ItemBreakdownChartComponent };
+    }),
+  {
+    ssr: false,
+    loading: () => <div className="h-[300px] bg-muted animate-pulse rounded" />,
+  }
+);
 
 export function ItemBreakdownChart({ data }: ItemBreakdownChartProps) {
   const chartData = Object.entries(data).map(([name, value]) => ({
@@ -55,30 +103,7 @@ export function ItemBreakdownChart({ data }: ItemBreakdownChartProps) {
         <CardTitle>집행 항목별 구성</CardTitle>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <PieChart>
-            <Pie
-              data={chartData}
-              cx="50%"
-              cy="50%"
-              outerRadius={80}
-              fill="#8884d8"
-              dataKey="amount"
-            >
-              {chartData.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={COLORS[index % COLORS.length]}
-                />
-              ))}
-            </Pie>
-            <Tooltip
-              formatter={(value: number) => formatBudget(value)}
-              labelFormatter={(label) => `${label}`}
-            />
-            <Legend />
-          </PieChart>
-        </ResponsiveContainer>
+        <ChartComponent data={data} />
         <div className="mt-4 space-y-2">
           {chartData.map((item, index) => (
             <div
