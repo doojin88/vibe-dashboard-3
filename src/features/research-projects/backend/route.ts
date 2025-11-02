@@ -54,11 +54,11 @@ export function registerResearchProjectRoutes(app: Hono<AppEnv>) {
     }
 
     // Calculate execution rate for each project
-    const projectsWithRate = data?.map((project) => {
-      const totalExecuted = project.executions?.reduce(
-        (sum, exec) => sum + (exec.execution_amount || 0),
+    const projectsWithRate = (data || []).map((project: any) => {
+      const totalExecuted = (project.executions || []).reduce(
+        (sum: number, exec: any) => sum + (exec.execution_amount || 0),
         0
-      ) || 0;
+      );
 
       return {
         ...project,
@@ -104,16 +104,16 @@ export function registerResearchProjectRoutes(app: Hono<AppEnv>) {
     }
 
     // 2. Calculate aggregate metrics
-    const totalProjects = projects?.length || 0;
-    const totalBudget = projects?.reduce((sum, p) => sum + (p.total_budget || 0), 0) || 0;
-    const totalExecuted = projects?.reduce((sum, p) => {
-      return sum + (p.executions?.reduce((eSum, e) => eSum + (e.execution_amount || 0), 0) || 0);
-    }, 0) || 0;
+    const totalProjects = (projects || []).length;
+    const totalBudget = (projects || []).reduce((sum: number, p: any) => sum + (p.total_budget || 0), 0);
+    const totalExecuted = (projects || []).reduce((sum: number, p: any) => {
+      return sum + ((p.executions || []).reduce((eSum: number, e: any) => eSum + (e.execution_amount || 0), 0));
+    }, 0);
     const executionRate = totalBudget > 0 ? (totalExecuted / totalBudget) * 100 : 0;
 
     // 3. Aggregate by funding agency
     const byAgency = new Map<string, { budget: number; count: number }>();
-    projects?.forEach((project) => {
+    (projects || []).forEach((project: any) => {
       const agency = project.funding_agency;
       const current = byAgency.get(agency) || { budget: 0, count: 0 };
       byAgency.set(agency, {
@@ -139,11 +139,11 @@ export function registerResearchProjectRoutes(app: Hono<AppEnv>) {
       count: number;
     }>();
 
-    projects?.forEach((project) => {
+    (projects || []).forEach((project: any) => {
       const key = project.department_id;
       const current = byDept.get(key) || {
-        college: project.department?.college_name || '',
-        dept: project.department?.department_name || '',
+        college: (project.department as any)?.college_name || '',
+        dept: (project.department as any)?.department_name || '',
         budget: 0,
         count: 0,
       };
@@ -165,10 +165,10 @@ export function registerResearchProjectRoutes(app: Hono<AppEnv>) {
       .slice(0, 10);
 
     // 5. Aggregate by status
-    const allExecutions = projects?.flatMap((p) => p.executions || []) || [];
+    const allExecutions = (projects || []).flatMap((p: any) => p.executions || []) as any[];
     const byStatus = new Map<string, number>();
 
-    allExecutions.forEach((exec) => {
+    allExecutions.forEach((exec: any) => {
       const status = exec.status;
       byStatus.set(status, (byStatus.get(status) || 0) + 1);
     });
@@ -186,8 +186,8 @@ export function registerResearchProjectRoutes(app: Hono<AppEnv>) {
     const timelineMap = new Map<string, { total: number; byItem: Map<string, number> }>();
 
     allExecutions
-      .filter((exec) => new Date(exec.execution_date) >= twelveMonthsAgo)
-      .forEach((exec) => {
+      .filter((exec: any) => new Date(exec.execution_date) >= twelveMonthsAgo)
+      .forEach((exec: any) => {
         const month = exec.execution_date.substring(0, 7); // YYYY-MM
         const current = timelineMap.get(month) || { total: 0, byItem: new Map() };
 
