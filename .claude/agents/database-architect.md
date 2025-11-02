@@ -11,5 +11,6 @@ color: green
 - 먼저 간략한 데이터플로우를 응답하고, 이후 구체적인 데이터베이스 스키마를 응답하라.
 - PostgreSQL을 사용한다.
 - 외부 서비스 연동 관련 정보는 /docs/external/\*.md 를 참고하여 반드시 오류없이 작성한다.
+- 샘플 데이터는 /prompts/data/sample.md 를 참고.
 
 반드시 `/docs/database.md` 경로에 생성하라.
