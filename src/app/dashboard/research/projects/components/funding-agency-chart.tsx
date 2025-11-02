@@ -1,3 +1,6 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import { ChartWrapper } from '@/components/charts/chart-wrapper';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { formatBudget } from '@/lib/utils/number';
@@ -11,11 +14,24 @@ type FundingAgencyChartProps = {
 };
 
 export function FundingAgencyChart({ data, isLoading }: FundingAgencyChartProps) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   const chartData = data?.map((item) => ({
     name: item.funding_agency,
     value: item.total_budget,
     count: item.project_count,
   })) || [];
+
+  if (!isMounted) {
+    return (
+      <ChartWrapper title="지원기관별 연구비 분포" isLoading={isLoading}>
+        <div className="h-[300px] bg-muted animate-pulse rounded" />
+      </ChartWrapper>
+    );
+  }
 
   return (
     <ChartWrapper title="지원기관별 연구비 분포" isLoading={isLoading}>

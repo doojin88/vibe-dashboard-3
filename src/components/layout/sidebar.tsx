@@ -7,6 +7,7 @@ import { ChevronDown, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserRole } from '@/hooks/useUserRole';
 import { MENU_ITEMS, type MenuItem } from '@/lib/navigation/menu-config';
+import { clientEnv } from '@/lib/env';
 import {
   Accordion,
   AccordionContent,
@@ -14,7 +15,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 
-export function Sidebar() {
+function SidebarContent() {
   const pathname = usePathname();
   const { data: role } = useUserRole();
 
@@ -31,6 +32,26 @@ export function Sidebar() {
       </nav>
     </aside>
   );
+}
+
+export function Sidebar() {
+  const hasClerk = !!clientEnv.clerkPublishableKey;
+  const pathname = usePathname();
+
+  if (!hasClerk) {
+    // Clerk가 없을 때는 role 없이 모든 메뉴 표시
+    return (
+      <aside className="sticky top-14 h-[calc(100vh-3.5rem)] w-64 overflow-y-auto border-r bg-background">
+        <nav className="flex flex-col gap-2 p-4">
+          {MENU_ITEMS.map((item) => (
+            <MenuItemComponent key={item.href} item={item} pathname={pathname} />
+          ))}
+        </nav>
+      </aside>
+    );
+  }
+
+  return <SidebarContent />;
 }
 
 function MenuItemComponent({ item, pathname }: { item: MenuItem; pathname: string }) {

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Providers from "./providers";
-import { loadCurrentUser } from "@/features/auth/server/load-current-user";
-import { CurrentUserProvider } from "@/features/auth/context/current-user-context";
+import { ClerkProvider } from "@clerk/nextjs";
+import { clientEnv } from "@/lib/env";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -14,17 +14,26 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const currentUser = await loadCurrentUser();
-
-  return (
+  const clerkKey = clientEnv.clerkPublishableKey;
+  
+  const content = (
     <html lang="ko" suppressHydrationWarning>
       <body className="antialiased font-sans">
         <Providers>
-          <CurrentUserProvider initialState={currentUser}>
-            {children}
-          </CurrentUserProvider>
+          {children}
         </Providers>
       </body>
     </html>
+  );
+
+  // Clerk 키가 없으면 ClerkProvider 없이 렌더링 (빌드 타임 처리)
+  if (!clerkKey) {
+    return content;
+  }
+
+  return (
+    <ClerkProvider publishableKey={clerkKey}>
+      {content}
+    </ClerkProvider>
   );
 }

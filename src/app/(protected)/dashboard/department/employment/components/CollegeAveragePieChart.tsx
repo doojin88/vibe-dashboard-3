@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -18,6 +19,11 @@ type CollegeAveragePieChartProps = {
 const PIE_COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82ca9d', '#ffc658'];
 
 export function CollegeAveragePieChart({ data, isLoading }: CollegeAveragePieChartProps) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   if (isLoading) {
     return (
       <Card>
@@ -50,6 +56,20 @@ export function CollegeAveragePieChart({ data, isLoading }: CollegeAveragePieCha
     name: item.college_name,
     value: item.avg_employment_rate,
   }));
+
+  if (!isMounted) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>단과대학별 평균 취업률</CardTitle>
+          <p className="text-sm text-muted-foreground">가중 평균 기준</p>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[300px] bg-muted animate-pulse rounded" />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>

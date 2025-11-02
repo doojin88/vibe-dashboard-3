@@ -1,6 +1,7 @@
 // src/app/dashboard/department/kpi/page.tsx
 'use client';
 
+import { Suspense } from 'react';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { FilterSection } from '@/features/department-kpi/components/filter-section';
 import { SummarySection } from '@/features/department-kpi/components/summary-section';
@@ -9,8 +10,9 @@ import { DataTableSection } from '@/features/department-kpi/components/data-tabl
 import { useKPIFilters } from '@/features/department-kpi/hooks/use-kpi-filters';
 import { useKPIMetrics } from '@/features/department-kpi/hooks/use-kpi-metrics';
 import { useKPISummary } from '@/features/department-kpi/hooks/use-kpi-summary';
+import { Skeleton } from '@/components/ui/skeleton';
 
-export default function DepartmentKPIPage() {
+function DepartmentKPIContent() {
   const { filters, updateFilters, resetFilters } = useKPIFilters();
   const { data: metrics, isLoading: metricsLoading } = useKPIMetrics(filters);
   const { data: summary, isLoading: summaryLoading } = useKPISummary(filters);
@@ -43,5 +45,23 @@ export default function DepartmentKPIPage() {
         <DataTableSection metrics={metrics} isLoading={metricsLoading} />
       </div>
     </DashboardLayout>
+  );
+}
+
+export default function DepartmentKPIPage() {
+  return (
+    <Suspense
+      fallback={
+        <DashboardLayout>
+          <div className="space-y-6">
+            <Skeleton className="h-12 w-64" />
+            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-64 w-full" />
+          </div>
+        </DashboardLayout>
+      }
+    >
+      <DepartmentKPIContent />
+    </Suspense>
   );
 }

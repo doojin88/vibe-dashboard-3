@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
@@ -11,6 +12,16 @@ type DonutChartProps = {
 };
 
 export function DonutChart({ data, nameKey, valueKey }: DonutChartProps) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return <div className="h-[300px] bg-muted animate-pulse rounded" />;
+  }
+
   return (
     <ResponsiveContainer width="100%" height={300}>
       <PieChart>
@@ -22,7 +33,6 @@ export function DonutChart({ data, nameKey, valueKey }: DonutChartProps) {
           cy="50%"
           innerRadius={60}
           outerRadius={100}
-          label={(entry) => `${entry[nameKey]}: ${entry[valueKey]}`}
         >
           {data.map((_, index) => (
             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

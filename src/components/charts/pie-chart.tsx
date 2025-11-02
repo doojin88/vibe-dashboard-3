@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import {
   PieChart as RechartsPieChart,
   Pie,
@@ -35,6 +36,16 @@ export function PieChart({
   showPercentage = false,
   colors = DEFAULT_COLORS,
 }: PieChartProps) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return <div className="h-[300px] bg-muted animate-pulse rounded" />;
+  }
+
   return (
     <ResponsiveContainer width="100%" height={300}>
       <RechartsPieChart>

@@ -1,3 +1,6 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import { ChartWrapper } from '@/components/charts/chart-wrapper';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import type { StatusData } from '@/features/research-projects/types';
@@ -13,10 +16,23 @@ type StatusChartProps = {
 };
 
 export function StatusChart({ data, isLoading }: StatusChartProps) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   const chartData = data?.map((item) => ({
     name: item.status,
     value: item.count,
   })) || [];
+
+  if (!isMounted) {
+    return (
+      <ChartWrapper title="과제별 진행 상태" isLoading={isLoading}>
+        <div className="h-[300px] bg-muted animate-pulse rounded" />
+      </ChartWrapper>
+    );
+  }
 
   return (
     <ChartWrapper title="과제별 진행 상태" isLoading={isLoading}>

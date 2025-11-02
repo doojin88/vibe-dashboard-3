@@ -1,6 +1,7 @@
 // src/features/department-kpi/components/charts-section/employment-rate-chart.tsx
 'use client';
 
+import { useEffect, useState } from 'react';
 import { ChartWrapper } from '@/components/charts/chart-wrapper';
 import {
   BarChart,
@@ -31,6 +32,23 @@ export function EmploymentRateChart({
   isLoading,
   onBarClick,
 }: EmploymentRateChartProps) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+  if (!isMounted) {
+    return (
+      <ChartWrapper
+        title="학과별 취업률 비교"
+        description="상위 20개 학과"
+        isLoading={isLoading}
+      >
+        <div className="h-[400px] bg-muted animate-pulse rounded" />
+      </ChartWrapper>
+    );
+  }
+
   return (
     <ChartWrapper
       title="학과별 취업률 비교"

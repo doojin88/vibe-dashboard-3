@@ -1,42 +1,44 @@
 'use client';
 
-import { useCallback } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { LogOut } from 'lucide-react';
+import { SignInButton, SignUpButton, SignedIn, SignedOut, UserButton, useUser } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { getSupabaseBrowserClient } from '@/lib/supabase/browser-client';
+import { clientEnv } from '@/lib/env';
 
-type User = {
-  id: string;
-  email?: string | null;
-  name?: string | null;
-};
+function ClerkAuthButtons() {
+  const { isLoaded } = useUser();
 
-type HomeHeaderProps = {
-  user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  onRefresh: () => Promise<void>;
-};
+  if (!isLoaded) {
+    return <span className="text-sm text-slate-400">로딩 중...</span>;
+  }
 
-export function HomeHeader({ user, isAuthenticated, isLoading, onRefresh }: HomeHeaderProps) {
-  const router = useRouter();
+  return (
+    <>
+      <SignedIn>
+        <Button asChild variant="outline" size="sm">
+          <Link href="/dashboard">대시보드</Link>
+        </Button>
+        <UserButton />
+      </SignedIn>
 
-  const handleSignOut = useCallback(async () => {
-    const supabase = getSupabaseBrowserClient();
-    await supabase.auth.signOut();
-    await onRefresh();
-    router.replace('/');
-  }, [onRefresh, router]);
+      <SignedOut>
+        <SignInButton mode="modal">
+          <Button variant="outline" size="sm">
+            로그인
+          </Button>
+        </SignInButton>
+        <SignUpButton mode="modal">
+          <Button size="sm">
+            회원가입
+          </Button>
+        </SignUpButton>
+      </SignedOut>
+    </>
+  );
+}
+
+export function HomeHeader() {
+  const hasClerk = !!clientEnv.clerkPublishableKey;
 
   return (
     <header className="border-b border-slate-700/50 bg-slate-900/80 backdrop-blur-sm">
@@ -48,43 +50,12 @@ export function HomeHeader({ user, isAuthenticated, isLoading, onRefresh }: Home
         </Link>
 
         <div className="flex items-center gap-3">
-          {isLoading && (
-            <span className="text-sm text-slate-400">로딩 중...</span>
-          )}
-
-          {!isLoading && isAuthenticated && user && (
-            <>
-              <Button asChild variant="outline" size="sm">
-                <Link href="/dashboard">대시보드</Link>
-              </Button>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm">
-                    {user.email ?? '사용자'}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>내 계정</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    로그아웃
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </>
-          )}
-
-          {!isLoading && !isAuthenticated && (
-            <>
-              <Button asChild variant="outline" size="sm">
-                <Link href="/login">로그인</Link>
-              </Button>
-              <Button asChild size="sm">
-                <Link href="/signup">회원가입</Link>
-              </Button>
-            </>
+          {hasClerk ? (
+            <ClerkAuthButtons />
+          ) : (
+            <Button asChild variant="outline" size="sm">
+              <Link href="/dashboard">대시보드</Link>
+            </Button>
           )}
         </div>
       </div>

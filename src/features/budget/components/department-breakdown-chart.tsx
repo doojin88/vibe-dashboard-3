@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   BarChart,
@@ -21,6 +22,11 @@ type DepartmentBreakdownChartProps = {
 export function DepartmentBreakdownChart({
   data,
 }: DepartmentBreakdownChartProps) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   if (!data || data.length === 0) {
     return (
       <Card>
@@ -41,6 +47,19 @@ export function DepartmentBreakdownChart({
     amount: item.amount,
     executionRate: item.executionRate,
   }));
+
+  if (!isMounted) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>학과별 집행 현황</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[400px] bg-muted animate-pulse rounded" />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
