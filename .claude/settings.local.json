@@ -7,7 +7,11 @@
       "Bash(npm run lint:*)",
       "Bash(npm run build:*)",
       "Bash(ls:*)",
-      "Bash(npm run type-check:*)"
+      "Bash(npm run type-check:*)",
+      "Bash(for dir in docs/pages/*/)",
+      "Bash(do basename \"$dir\")",
+      "Bash(done)",
+      "Bash(file:*)"
     ],
     "deny": [],
     "ask": []
