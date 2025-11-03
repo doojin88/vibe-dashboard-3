@@ -22,7 +22,7 @@ export function Header() {
           >
             대시보드
           </Link>
-          {(role === 'administrator' || !role) && (
+          {role === 'administrator' && (
             <Link
               href="/data/upload"
               className="transition-colors hover:text-foreground/80"
