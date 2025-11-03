@@ -7,7 +7,6 @@ import { ChevronDown, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserRole } from '@/hooks/useUserRole';
 import { MENU_ITEMS, type MenuItem } from '@/lib/navigation/menu-config';
-import { clientEnv } from '@/lib/env';
 import {
   Accordion,
   AccordionContent,
@@ -15,10 +14,11 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 
-function SidebarContent() {
+export function Sidebar() {
   const pathname = usePathname();
   const { data: role } = useUserRole();
 
+  // 비로그인 상태에서는 모든 메뉴 표시 (role 필터링은 유지)
   const visibleItems = MENU_ITEMS.filter(
     (item) => !item.role || item.role === role
   );
@@ -32,26 +32,6 @@ function SidebarContent() {
       </nav>
     </aside>
   );
-}
-
-export function Sidebar() {
-  const hasClerk = !!clientEnv.clerkPublishableKey;
-  const pathname = usePathname();
-
-  if (!hasClerk) {
-    // Clerk가 없을 때는 role 없이 모든 메뉴 표시
-    return (
-      <aside className="sticky top-14 h-[calc(100vh-3.5rem)] w-64 overflow-y-auto border-r bg-background">
-        <nav className="flex flex-col gap-2 p-4">
-          {MENU_ITEMS.map((item) => (
-            <MenuItemComponent key={item.href} item={item} pathname={pathname} />
-          ))}
-        </nav>
-      </aside>
-    );
-  }
-
-  return <SidebarContent />;
 }
 
 function MenuItemComponent({ item, pathname }: { item: MenuItem; pathname: string }) {
