@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { TrendingUp, CheckCircle, Building2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { EmploymentFilterPanel } from './components/EmploymentFilterPanel';
 import { EmploymentTrendChart } from './components/EmploymentTrendChart';
 import { CollegeAveragePieChart } from './components/CollegeAveragePieChart';
@@ -17,7 +19,7 @@ type FilterState = {
   department_names: string[];
 };
 
-export default function EmploymentAnalysisPage() {
+function EmploymentAnalysisContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -97,30 +99,30 @@ export default function EmploymentAnalysisPage() {
 
   if (error) {
     return (
-      <div className="container mx-auto p-6">
+      <DashboardLayout>
         <Card className="p-6">
           <h3 className="text-lg font-semibold text-red-600">데이터 로딩 실패</h3>
           <p className="text-sm text-muted-foreground mt-2">
             {error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다'}
           </p>
         </Card>
-      </div>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">취업률 분석</h1>
-      </div>
+    <DashboardLayout>
+      <div className="flex gap-6">
+        {/* 메인 콘텐츠 영역 (왼쪽) */}
+        <div className="flex-1 space-y-6">
+          {/* 페이지 헤더 */}
+          <div>
+            <h1 className="text-3xl font-bold">취업률 분석</h1>
+            <p className="text-muted-foreground mt-2">
+              학과별 취업률 현황 및 분석
+            </p>
+          </div>
 
-      {/* 필터 패널 */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div className="lg:col-span-1">
-          <EmploymentFilterPanel filters={filters} onChange={handleFilterChange} />
-        </div>
-
-        <div className="lg:col-span-3 space-y-6">
           {/* KPI 카드 섹션 */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
@@ -178,7 +180,41 @@ export default function EmploymentAnalysisPage() {
             onDownloadCSV={handleDownloadCSV}
           />
         </div>
+
+        {/* 필터 패널 (오른쪽 고정) */}
+        <div className="w-80 flex-shrink-0">
+          <div className="sticky top-6">
+            <EmploymentFilterPanel filters={filters} onChange={handleFilterChange} />
+          </div>
+        </div>
       </div>
-    </div>
+    </DashboardLayout>
+  );
+}
+
+export default function EmploymentAnalysisPage() {
+  return (
+    <Suspense
+      fallback={
+        <DashboardLayout>
+          <div className="flex gap-6">
+            <div className="flex-1 space-y-6">
+              <Skeleton className="h-12 w-64" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[...Array(3)].map((_, i) => (
+                  <Skeleton key={i} className="h-32" />
+                ))}
+              </div>
+              <Skeleton className="h-64 w-full" />
+            </div>
+            <div className="w-80">
+              <Skeleton className="h-96" />
+            </div>
+          </div>
+        </DashboardLayout>
+      }
+    >
+      <EmploymentAnalysisContent />
+    </Suspense>
   );
 }
