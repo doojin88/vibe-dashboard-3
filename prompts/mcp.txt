@@ -1,0 +1,5 @@
+
+claude mcp add --scope project --transport stdio context7 -- npx -y @upstash/context7-mcp
+claude mcp add --scope project --transport stdio playwright -- npx @playwright/mcp@latest
+claude mcp add --scope project --transport stdio shadcn -- npx shadcn@latest mcp
+claude mcp add --scope project --transport stdio chrome-devtools -- npx chrome-devtools-mcp@latest
