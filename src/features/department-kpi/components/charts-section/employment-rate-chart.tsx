@@ -1,18 +1,8 @@
 // src/features/department-kpi/components/charts-section/employment-rate-chart.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { ChartWrapper } from '@/components/charts/chart-wrapper';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-} from 'recharts';
 import type { EmploymentRateChartData } from '../../types';
 
 type EmploymentRateChartProps = {
@@ -27,58 +17,75 @@ const COLOR_MAP = {
   red: '#ef4444',
 };
 
+const EmploymentRateChartInternal = dynamic(
+  () =>
+    import('recharts').then((recharts) => {
+      const {
+        BarChart: RechartsBarChart,
+        Bar,
+        XAxis,
+        YAxis,
+        CartesianGrid,
+        Tooltip,
+        ResponsiveContainer,
+        Cell,
+      } = recharts;
+
+      function EmploymentRateChartComponent({
+        data,
+        onBarClick,
+      }: {
+        data: EmploymentRateChartData[];
+        onBarClick?: (department: string) => void;
+      }) {
+        return (
+          <ResponsiveContainer width="100%" height={400}>
+            <RechartsBarChart
+              data={data}
+              layout="vertical"
+              margin={{ top: 5, right: 30, left: 120, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis type="number" domain={[0, 100]} unit="%" />
+              <YAxis type="category" dataKey="department" width={100} />
+              <Tooltip
+                formatter={(value: number) => `${value.toFixed(1)}%`}
+                labelFormatter={(label) => `학과: ${label}`}
+              />
+              <Bar
+                dataKey="employment_rate"
+                onClick={(data: any) => onBarClick?.(data.department)}
+                cursor="pointer"
+              >
+                {data.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLOR_MAP[entry.color]} />
+                ))}
+              </Bar>
+            </RechartsBarChart>
+          </ResponsiveContainer>
+        );
+      }
+
+      return { default: EmploymentRateChartComponent };
+    }),
+  {
+    ssr: false,
+    loading: () => <div className="h-[400px] bg-muted animate-pulse rounded" />,
+  }
+);
+
 export function EmploymentRateChart({
   data,
   isLoading,
   onBarClick,
 }: EmploymentRateChartProps) {
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-  if (!isMounted) {
-    return (
-      <ChartWrapper
-        title="학과별 취업률 비교"
-        description="상위 20개 학과"
-        isLoading={isLoading}
-      >
-        <div className="h-[400px] bg-muted animate-pulse rounded" />
-      </ChartWrapper>
-    );
-  }
-
   return (
     <ChartWrapper
       title="학과별 취업률 비교"
       description="상위 20개 학과"
       isLoading={isLoading}
     >
-      <ResponsiveContainer width="100%" height={400}>
-        <BarChart
-          data={data}
-          layout="vertical"
-          margin={{ top: 5, right: 30, left: 120, bottom: 5 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis type="number" domain={[0, 100]} unit="%" />
-          <YAxis type="category" dataKey="department" width={100} />
-          <Tooltip
-            formatter={(value: number) => `${value.toFixed(1)}%`}
-            labelFormatter={(label) => `학과: ${label}`}
-          />
-          <Bar
-            dataKey="employment_rate"
-            onClick={(data: any) => onBarClick?.(data.department)}
-            cursor="pointer"
-          >
-            {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLOR_MAP[entry.color]} />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
+      <EmploymentRateChartInternal data={data} onBarClick={onBarClick} />
     </ChartWrapper>
   );
 }

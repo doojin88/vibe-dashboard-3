@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { ChartWrapper } from '@/components/charts/chart-wrapper';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import type { StatusData } from '@/features/research-projects/types';
 
 const COLORS = {
@@ -15,24 +14,65 @@ type StatusChartProps = {
   isLoading: boolean;
 };
 
-export function StatusChart({ data, isLoading }: StatusChartProps) {
-  const [isMounted, setIsMounted] = useState(false);
+const StatusChartInternal = dynamic(
+  () =>
+    import('recharts').then((recharts) => {
+      const {
+        PieChart: RechartsPieChart,
+        Pie,
+        Cell,
+        ResponsiveContainer,
+        Tooltip,
+        Legend,
+      } = recharts;
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+      function StatusChartComponent({
+        chartData,
+      }: {
+        chartData: Array<{ name: string; value: number }>;
+      }) {
+        return (
+          <ResponsiveContainer width="100%" height={300}>
+            <RechartsPieChart>
+              <Pie
+                data={chartData}
+                cx="50%"
+                cy="50%"
+                outerRadius={100}
+                innerRadius={60}
+                fill="#8884d8"
+                dataKey="value"
+              >
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[entry.name as keyof typeof COLORS]} />
+                ))}
+              </Pie>
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                  border: '1px solid #ccc',
+                  borderRadius: '4px',
+                }}
+              />
+              <Legend />
+            </RechartsPieChart>
+          </ResponsiveContainer>
+        );
+      }
+
+      return { default: StatusChartComponent };
+    }),
+  {
+    ssr: false,
+    loading: () => <div className="h-[300px] bg-muted animate-pulse rounded" />,
+  }
+);
+
+export function StatusChart({ data, isLoading }: StatusChartProps) {
   const chartData = data?.map((item) => ({
     name: item.status,
     value: item.count,
   })) || [];
-
-  if (!isMounted) {
-    return (
-      <ChartWrapper title="과제별 진행 상태" isLoading={isLoading}>
-        <div className="h-[300px] bg-muted animate-pulse rounded" />
-      </ChartWrapper>
-    );
-  }
 
   return (
     <ChartWrapper title="과제별 진행 상태" isLoading={isLoading}>
@@ -41,31 +81,7 @@ export function StatusChart({ data, isLoading }: StatusChartProps) {
           데이터가 없습니다
         </div>
       ) : (
-        <ResponsiveContainer width="100%" height={300}>
-          <PieChart>
-            <Pie
-              data={chartData}
-              cx="50%"
-              cy="50%"
-              outerRadius={100}
-              innerRadius={60}
-              fill="#8884d8"
-              dataKey="value"
-            >
-              {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[entry.name as keyof typeof COLORS]} />
-              ))}
-            </Pie>
-            <Tooltip
-              contentStyle={{
-                backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                border: '1px solid #ccc',
-                borderRadius: '4px',
-              }}
-            />
-            <Legend />
-          </PieChart>
-        </ResponsiveContainer>
+        <StatusChartInternal chartData={chartData} />
       )}
     </ChartWrapper>
   );

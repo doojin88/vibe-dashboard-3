@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { ChartWrapper } from '@/components/charts/chart-wrapper';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { formatBudget } from '@/lib/utils/number';
 import type { AgencyData } from '@/features/research-projects/types';
 
@@ -13,25 +12,66 @@ type FundingAgencyChartProps = {
   isLoading: boolean;
 };
 
-export function FundingAgencyChart({ data, isLoading }: FundingAgencyChartProps) {
-  const [isMounted, setIsMounted] = useState(false);
+const FundingAgencyChartInternal = dynamic(
+  () =>
+    import('recharts').then((recharts) => {
+      const {
+        PieChart: RechartsPieChart,
+        Pie,
+        Cell,
+        ResponsiveContainer,
+        Tooltip,
+        Legend,
+      } = recharts;
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+      function FundingAgencyChartComponent({
+        chartData,
+      }: {
+        chartData: Array<{ name: string; value: number; count: number }>;
+      }) {
+        return (
+          <ResponsiveContainer width="100%" height={300}>
+            <RechartsPieChart>
+              <Pie
+                data={chartData}
+                cx="50%"
+                cy="50%"
+                outerRadius={100}
+                fill="#8884d8"
+                dataKey="value"
+              >
+                {chartData.map((_, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip
+                formatter={(value: number) => formatBudget(value)}
+                contentStyle={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                  border: '1px solid #ccc',
+                  borderRadius: '4px',
+                }}
+              />
+              <Legend />
+            </RechartsPieChart>
+          </ResponsiveContainer>
+        );
+      }
+
+      return { default: FundingAgencyChartComponent };
+    }),
+  {
+    ssr: false,
+    loading: () => <div className="h-[300px] bg-muted animate-pulse rounded" />,
+  }
+);
+
+export function FundingAgencyChart({ data, isLoading }: FundingAgencyChartProps) {
   const chartData = data?.map((item) => ({
     name: item.funding_agency,
     value: item.total_budget,
     count: item.project_count,
   })) || [];
-
-  if (!isMounted) {
-    return (
-      <ChartWrapper title="지원기관별 연구비 분포" isLoading={isLoading}>
-        <div className="h-[300px] bg-muted animate-pulse rounded" />
-      </ChartWrapper>
-    );
-  }
 
   return (
     <ChartWrapper title="지원기관별 연구비 분포" isLoading={isLoading}>
@@ -40,31 +80,7 @@ export function FundingAgencyChart({ data, isLoading }: FundingAgencyChartProps)
           데이터가 없습니다
         </div>
       ) : (
-        <ResponsiveContainer width="100%" height={300}>
-          <PieChart>
-            <Pie
-              data={chartData}
-              cx="50%"
-              cy="50%"
-              outerRadius={100}
-              fill="#8884d8"
-              dataKey="value"
-            >
-              {chartData.map((_, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip
-              formatter={(value: number) => formatBudget(value)}
-              contentStyle={{
-                backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                border: '1px solid #ccc',
-                borderRadius: '4px',
-              }}
-            />
-            <Legend />
-          </PieChart>
-        </ResponsiveContainer>
+        <FundingAgencyChartInternal chartData={chartData} />
       )}
     </ChartWrapper>
   );

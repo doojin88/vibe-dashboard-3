@@ -1,20 +1,52 @@
 // src/features/publications/components/DepartmentPublicationChart.tsx
 'use client';
 
+import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDepartmentPublicationCount } from '../api/useDepartmentPublicationCount';
 import { usePublicationStore } from '../store/publicationStore';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts';
+
+const DepartmentPublicationChartInternal = dynamic(
+  () =>
+    import('recharts').then((recharts) => {
+      const {
+        BarChart: RechartsBarChart,
+        Bar,
+        XAxis,
+        YAxis,
+        CartesianGrid,
+        Tooltip,
+        Legend,
+        ResponsiveContainer,
+      } = recharts;
+
+      function DepartmentPublicationChartComponent({
+        chartData,
+      }: {
+        chartData: Array<{ name: string; count: number }>;
+      }) {
+        return (
+          <ResponsiveContainer width="100%" height={300}>
+            <RechartsBarChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="count" fill="#3b82f6" name="논문 수" />
+            </RechartsBarChart>
+          </ResponsiveContainer>
+        );
+      }
+
+      return { default: DepartmentPublicationChartComponent };
+    }),
+  {
+    ssr: false,
+    loading: () => <Skeleton className="h-[300px] w-full" />,
+  }
+);
 
 export function DepartmentPublicationChart() {
   const { filters } = usePublicationStore();
@@ -46,16 +78,7 @@ export function DepartmentPublicationChart() {
         <CardDescription>Top 20 학과</CardDescription>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="count" fill="#3b82f6" name="논문 수" />
-          </BarChart>
-        </ResponsiveContainer>
+        <DepartmentPublicationChartInternal chartData={chartData} />
       </CardContent>
     </Card>
   );

@@ -1,17 +1,8 @@
 // src/features/department-kpi/components/charts-section/conference-heatmap.tsx
 'use client';
 
+import dynamic from 'next/dynamic';
 import { ChartWrapper } from '@/components/charts/chart-wrapper';
-import {
-  ScatterChart,
-  Scatter,
-  XAxis,
-  YAxis,
-  ZAxis,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-} from 'recharts';
 import type { ConferenceHeatmapData } from '../../types';
 
 type ConferenceHeatmapProps = {
@@ -26,6 +17,66 @@ const getColor = (count: number): string => {
   if (count <= 5) return '#60a5fa'; // 중간 파란색
   return '#3b82f6'; // 진한 파란색
 };
+
+const ConferenceHeatmapInternal = dynamic(
+  () =>
+    import('recharts').then((recharts) => {
+      const {
+        ScatterChart: RechartsScatterChart,
+        Scatter,
+        XAxis,
+        YAxis,
+        ZAxis,
+        Tooltip,
+        ResponsiveContainer,
+        Cell,
+      } = recharts;
+
+      function ConferenceHeatmapComponent({
+        scatterData,
+      }: {
+        scatterData: Array<{ x: string; y: number; z: number; count: number }>;
+      }) {
+        return (
+          <ResponsiveContainer width="100%" height={400}>
+            <RechartsScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 100 }}>
+              <XAxis type="category" dataKey="x" name="학과" />
+              <YAxis type="number" dataKey="y" name="연도" />
+              <ZAxis type="number" dataKey="z" range={[100, 1000]} />
+              <Tooltip
+                cursor={{ strokeDasharray: '3 3' }}
+                content={({ payload }) => {
+                  if (payload && payload.length > 0) {
+                    const data = payload[0].payload;
+                    return (
+                      <div className="bg-background border rounded-md p-2 shadow-md">
+                        <p className="text-sm font-medium">{data.x}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {data.y}년: {data.count}회
+                        </p>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
+              <Scatter data={scatterData} shape="square">
+                {scatterData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={getColor(entry.count)} />
+                ))}
+              </Scatter>
+            </RechartsScatterChart>
+          </ResponsiveContainer>
+        );
+      }
+
+      return { default: ConferenceHeatmapComponent };
+    }),
+  {
+    ssr: false,
+    loading: () => <div className="h-[400px] bg-muted animate-pulse rounded" />,
+  }
+);
 
 export function ConferenceHeatmap({ data, isLoading }: ConferenceHeatmapProps) {
   // 연도가 여러 개 선택되지 않았으면 히트맵을 표시하지 않음
@@ -58,35 +109,7 @@ export function ConferenceHeatmap({ data, isLoading }: ConferenceHeatmapProps) {
       description="연도별 개최 횟수 (히트맵)"
       isLoading={isLoading}
     >
-      <ResponsiveContainer width="100%" height={400}>
-        <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 100 }}>
-          <XAxis type="category" dataKey="x" name="학과" />
-          <YAxis type="number" dataKey="y" name="연도" />
-          <ZAxis type="number" dataKey="z" range={[100, 1000]} />
-          <Tooltip
-            cursor={{ strokeDasharray: '3 3' }}
-            content={({ payload }) => {
-              if (payload && payload.length > 0) {
-                const data = payload[0].payload;
-                return (
-                  <div className="bg-background border rounded-md p-2 shadow-md">
-                    <p className="text-sm font-medium">{data.x}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {data.y}년: {data.count}회
-                    </p>
-                  </div>
-                );
-              }
-              return null;
-            }}
-          />
-          <Scatter data={scatterData} shape="square">
-            {scatterData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={getColor(entry.count)} />
-            ))}
-          </Scatter>
-        </ScatterChart>
-      </ResponsiveContainer>
+      <ConferenceHeatmapInternal scatterData={scatterData} />
     </ChartWrapper>
   );
 }
