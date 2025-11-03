@@ -15,7 +15,6 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import type { ProjectFilters } from '../types';
 import { useFilterOptions } from '../hooks/useFilterOptions';
@@ -150,7 +149,7 @@ export function FilterPanel({ filters, onFilterChange }: FilterPanelProps) {
         {/* 집행 상태 */}
         <div className="space-y-2">
           <Label>집행 상태</Label>
-          <RadioGroup
+          <Select
             value={filters.status ?? 'all'}
             onValueChange={(value) =>
               onFilterChange({
@@ -159,19 +158,15 @@ export function FilterPanel({ filters, onFilterChange }: FilterPanelProps) {
               })
             }
           >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="all" id="all" />
-              <Label htmlFor="all">전체</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="집행완료" id="completed" />
-              <Label htmlFor="completed">집행완료</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="처리중" id="processing" />
-              <Label htmlFor="processing">처리중</Label>
-            </div>
-          </RadioGroup>
+            <SelectTrigger>
+              <SelectValue placeholder="전체" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">전체</SelectItem>
+              <SelectItem value="집행완료">집행완료</SelectItem>
+              <SelectItem value="처리중">처리중</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* 초기화 버튼 */}
