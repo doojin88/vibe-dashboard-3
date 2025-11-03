@@ -22,17 +22,32 @@ export function useUserRole() {
   }
 
   return useQuery<UserRole | null>({
-    queryKey: ['userRole', user?.id],
+    queryKey: ['userRole', hasClerk ? user?.id : 'no-auth'],
     queryFn: async () => {
-      if (!user) return null;
+      // Clerk가 없으면 항상 'viewer' 반환 (로그인 없이 사용)
+      if (!hasClerk) {
+        return 'viewer';
+      }
+
+      // Clerk가 있지만 사용자가 없으면 null
+      if (!user) {
+        return null;
+      }
 
       const response = await fetch('/api/auth/role');
-      if (!response.ok) return 'viewer';
+      if (!response.ok) {
+        // 에러 발생 시 기본값 반환
+        return 'viewer';
+      }
 
       const data = await response.json();
-      return data.role;
+      return data.role || 'viewer';
     },
-    enabled: isSignedIn && !!user,
+    // Clerk가 없으면 항상 활성화 (항상 'viewer' 반환)
+    // Clerk가 있으면 사용자가 로그인했을 때만 활성화
+    enabled: !hasClerk || (isSignedIn && !!user),
     staleTime: 5 * 60 * 1000, // 5분
+    // Clerk가 없을 때는 초기 데이터를 'viewer'로 설정
+    initialData: !hasClerk ? 'viewer' : undefined,
   });
 }
