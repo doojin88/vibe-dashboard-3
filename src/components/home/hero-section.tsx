@@ -1,43 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { SignInButton, SignedIn, SignedOut, useUser } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
-import { clientEnv } from '@/lib/env';
-
-function ClerkHeroButtons() {
-  const { isLoaded } = useUser();
-
-  if (!isLoaded) {
-    return (
-      <Button disabled size="lg" className="px-8">
-        로딩 중...
-      </Button>
-    );
-  }
-
-  return (
-    <>
-      <SignedOut>
-        <SignInButton mode="modal">
-          <Button size="lg" className="px-8">
-            로그인하기
-          </Button>
-        </SignInButton>
-      </SignedOut>
-
-      <SignedIn>
-        <Button asChild size="lg" className="px-8">
-          <Link href="/dashboard">대시보드로 이동</Link>
-        </Button>
-      </SignedIn>
-    </>
-  );
-}
 
 export function HeroSection() {
-  const hasClerk = !!clientEnv.clerkPublishableKey;
-
   return (
     <section className="flex flex-col items-center justify-center text-center">
       <h1 className="text-5xl font-bold tracking-tight text-white md:text-6xl">
@@ -50,13 +16,9 @@ export function HeroSection() {
       </p>
 
       <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-        {hasClerk ? (
-          <ClerkHeroButtons />
-        ) : (
-          <Button asChild size="lg" className="px-8">
-            <Link href="/dashboard">대시보드로 이동</Link>
-          </Button>
-        )}
+        <Button asChild size="lg" className="px-8">
+          <Link href="/dashboard">대시보드로 이동</Link>
+        </Button>
       </div>
     </section>
   );
