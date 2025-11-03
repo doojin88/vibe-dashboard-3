@@ -6,9 +6,27 @@ import type { AppEnv } from '@/backend/hono/context';
 import { getSupabaseServiceClient } from '@/lib/supabase/service-client';
 
 const employmentFilterSchema = z.object({
-  evaluation_year: z.coerce.number().array().optional(),
-  college_name: z.string().array().optional(),
-  department_name: z.string().array().optional(),
+  evaluation_year: z.union([
+    z.coerce.number().array(),
+    z.coerce.number(),
+  ]).optional().transform((val) => {
+    if (!val) return undefined;
+    return Array.isArray(val) ? val : [val];
+  }),
+  college_name: z.union([
+    z.string().array(),
+    z.string(),
+  ]).optional().transform((val) => {
+    if (!val) return undefined;
+    return Array.isArray(val) ? val : [val];
+  }),
+  department_name: z.union([
+    z.string().array(),
+    z.string(),
+  ]).optional().transform((val) => {
+    if (!val) return undefined;
+    return Array.isArray(val) ? val : [val];
+  }),
 });
 
 const TARGET_EMPLOYMENT_RATE = 70; // 목표 취업률 70%

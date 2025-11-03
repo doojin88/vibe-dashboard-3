@@ -71,5 +71,51 @@ export function registerKPIRoutes(app: Hono<AppEnv>) {
     });
   });
 
+  // GET /api/kpi-metrics/filter-options
+  kpi.get('/filter-options', async (c) => {
+    const supabase = getSupabaseServiceClient();
+
+    try {
+      // 평가년도 옵션
+      const { data: yearsData } = await supabase
+        .from('kpi_metrics')
+        .select('evaluation_year')
+        .order('evaluation_year', { ascending: false });
+
+      // 단과대학 옵션
+      const { data: collegeData } = await supabase
+        .from('departments')
+        .select('college_name')
+        .order('college_name');
+
+      // 학과 옵션
+      const { data: deptData } = await supabase
+        .from('departments')
+        .select('department_name')
+        .order('department_name');
+
+      const years = Array.from(
+        new Set((yearsData || []).map((y: any) => y.evaluation_year))
+      ) as number[];
+
+      const colleges = Array.from(
+        new Set((collegeData || []).map((c: any) => c.college_name))
+      ) as string[];
+
+      const departments = Array.from(
+        new Set((deptData || []).map((d: any) => d.department_name))
+      ) as string[];
+
+      return c.json({
+        years,
+        colleges,
+        departments,
+      });
+    } catch (error) {
+      console.error('Error fetching filter options:', error);
+      return c.json({ error: 'Failed to fetch filter options' }, 500);
+    }
+  });
+
   app.route('/kpi-metrics', kpi);
 }
