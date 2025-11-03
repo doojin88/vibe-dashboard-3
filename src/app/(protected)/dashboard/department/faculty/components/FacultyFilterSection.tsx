@@ -1,24 +1,28 @@
-// src/features/department-kpi/components/filter-section.tsx
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { Button } from '@/components/ui/button';
-import { useFilterOptions } from '../hooks/use-filter-options';
-import type { KPIFilters } from '../types';
+import { useFacultyFilters } from '@/hooks/api/useFacultyData';
 
-type FilterSectionProps = {
-  filters: KPIFilters;
-  onFilterChange: (filters: Partial<KPIFilters>) => void;
+type FacultyFilters = {
+  evaluation_years?: number[];
+  college_names?: string[];
+  department_names?: string[];
+};
+
+type FacultyFilterSectionProps = {
+  filters: FacultyFilters;
+  onFilterChange: (filters: Partial<FacultyFilters>) => void;
   onReset: () => void;
 };
 
-export function FilterSection({
+export function FacultyFilterSection({
   filters,
   onFilterChange,
   onReset,
-}: FilterSectionProps) {
-  const { data: options, isLoading } = useFilterOptions(filters);
+}: FacultyFilterSectionProps) {
+  const { data: options, isLoading } = useFacultyFilters();
 
   return (
     <Card>
@@ -30,7 +34,7 @@ export function FilterSection({
         <div className="space-y-2">
           <label className="text-sm font-medium">평가년도</label>
           <MultiSelect
-            options={options?.evaluation_years.map((year) => ({
+            options={options?.years.map((year) => ({
               label: `${year}년`,
               value: String(year),
             })) ?? []}
@@ -49,9 +53,9 @@ export function FilterSection({
         <div className="space-y-2">
           <label className="text-sm font-medium">단과대학</label>
           <MultiSelect
-            options={options?.college_names.map((name) => ({
-              label: name,
-              value: name,
+            options={options?.colleges.map((college) => ({
+              label: college,
+              value: college,
             })) ?? []}
             value={filters.college_names ?? []}
             onChange={(values) =>
@@ -70,9 +74,9 @@ export function FilterSection({
         <div className="space-y-2">
           <label className="text-sm font-medium">학과</label>
           <MultiSelect
-            options={options?.department_names.map((name) => ({
-              label: name,
-              value: name,
+            options={options?.departments.map((dept) => ({
+              label: dept.department_name,
+              value: dept.department_name,
             })) ?? []}
             value={filters.department_names ?? []}
             onChange={(values) =>
@@ -93,3 +97,4 @@ export function FilterSection({
     </Card>
   );
 }
+

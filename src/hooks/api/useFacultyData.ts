@@ -1,7 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import type { FilterValue } from '@/components/dashboard/filter-panel';
 
-type FacultyFilters = Record<string, FilterValue>;
+type FacultyFilters = {
+  evaluation_year?: number[];
+  college_name?: string[];
+  department_name?: string[];
+};
 
 type FacultyAggregate = {
   total_full_time: number;

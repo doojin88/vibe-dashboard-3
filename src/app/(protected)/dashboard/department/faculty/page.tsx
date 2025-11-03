@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, Suspense } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
-import { FilterPanel, type FilterValue } from '@/components/dashboard/filter-panel';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card } from '@/components/ui/card';
 import { KPICard } from '@/components/dashboard/kpi-card';
 import { ChartWrapper } from '@/components/charts/chart-wrapper';
 import { StackedBarChart } from '@/components/charts/stacked-bar-chart';
@@ -11,74 +12,68 @@ import { DonutChart } from '@/components/charts/donut-chart';
 import { LineChart } from '@/components/charts/line-chart';
 import { DataTable, type ColumnDef } from '@/components/dashboard/data-table';
 import { EmptyState } from '@/components/dashboard/empty-state';
-import { useFacultyData, useFacultyFilters } from '@/hooks/api/useFacultyData';
+import { useFacultyData } from '@/hooks/api/useFacultyData';
+import { FacultyFilterSection } from './components/FacultyFilterSection';
 import { Users, UserCheck, UserPlus, UsersRound } from 'lucide-react';
 
-export default function FacultyStatusPage() {
+type FacultyFilters = {
+  evaluation_years?: number[];
+  college_names?: string[];
+  department_names?: string[];
+};
+
+function FacultyStatusContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const [filters, setFilters] = useState<Record<string, FilterValue>>(() => {
+  const [filters, setFilters] = useState<FacultyFilters>(() => {
     // URL 파라미터에서 초기값 복원
     const yearParam = searchParams.get('year');
     const collegeParam = searchParams.get('college');
     const deptParam = searchParams.get('dept');
 
     return {
-      evaluation_year: yearParam ? (yearParam.split(',').map(Number) as number[]) : null,
-      college_name: collegeParam ? (collegeParam.split(',') as string[]) : null,
-      department_name: deptParam ? (deptParam.split(',') as string[]) : null,
+      evaluation_years: yearParam ? yearParam.split(',').map(Number) : undefined,
+      college_names: collegeParam ? collegeParam.split(',') : undefined,
+      department_names: deptParam ? deptParam.split(',') : undefined,
     };
   });
 
-  const { data: filtersData, isLoading: isFiltersLoading } = useFacultyFilters();
-  const { data, isLoading, error } = useFacultyData(filters);
+  // API 형식에 맞게 필터 변환
+  const apiFilters = {
+    evaluation_year: filters.evaluation_years,
+    college_name: filters.college_names,
+    department_name: filters.department_names,
+  };
 
-  // 필터 변경 시 URL 업데이트
-  useEffect(() => {
+  const { data, isLoading, error } = useFacultyData(apiFilters);
+
+  // 필터 변경 핸들러
+  const handleFilterChange = (newFilters: Partial<FacultyFilters>) => {
+    const updatedFilters = { ...filters, ...newFilters };
+    setFilters(updatedFilters);
+
+    // URL 파라미터 업데이트
     const params = new URLSearchParams();
 
-    if (filters.evaluation_year && Array.isArray(filters.evaluation_year)) {
-      params.set('year', filters.evaluation_year.join(','));
+    if (updatedFilters.evaluation_years && updatedFilters.evaluation_years.length > 0) {
+      params.set('year', updatedFilters.evaluation_years.join(','));
     }
-    if (filters.college_name && Array.isArray(filters.college_name)) {
-      params.set('college', filters.college_name.join(','));
+    if (updatedFilters.college_names && updatedFilters.college_names.length > 0) {
+      params.set('college', updatedFilters.college_names.join(','));
     }
-    if (filters.department_name && Array.isArray(filters.department_name)) {
-      params.set('dept', filters.department_name.join(','));
+    if (updatedFilters.department_names && updatedFilters.department_names.length > 0) {
+      params.set('dept', updatedFilters.department_names.join(','));
     }
 
     router.replace(`${pathname}?${params.toString()}`);
-  }, [filters, pathname, router]);
+  };
 
-  // 필터 설정
-  const filterConfig = [
-    {
-      key: 'evaluation_year',
-      label: '평가년도',
-      options: (filtersData?.years || []).map((year) => ({
-        label: `${year}년`,
-        value: String(year),
-      })),
-    },
-    {
-      key: 'college_name',
-      label: '단과대학',
-      options: (filtersData?.colleges || []).map((college) => ({
-        label: college,
-        value: college,
-      })),
-    },
-    {
-      key: 'department_name',
-      label: '학과',
-      options: (filtersData?.departments || []).map((dept) => ({
-        label: dept.department_name,
-        value: dept.department_name,
-      })),
-    },
-  ];
+  const handleReset = () => {
+    setFilters({});
+    router.replace(pathname);
+  };
 
   // 테이블 컬럼 정의
   const tableColumns: ColumnDef<any>[] = [
@@ -133,31 +128,28 @@ export default function FacultyStatusPage() {
   if (error) {
     return (
       <DashboardLayout>
-        <EmptyState
-          title="데이터를 불러오는데 실패했습니다"
-          description={error.message}
-        />
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold text-red-600">데이터 로딩 실패</h3>
+          <p className="text-sm text-muted-foreground mt-2">
+            {error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다'}
+          </p>
+        </Card>
       </DashboardLayout>
     );
   }
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        {/* Page Header */}
-        <div>
-          <h1 className="text-3xl font-bold">교원 현황</h1>
-          <p className="text-muted-foreground">
-            학과별 전임/초빙 교원 현황 분석
-          </p>
-        </div>
-
-        {/* Filter Panel */}
-        <FilterPanel
-          filters={filterConfig}
-          onFilterChange={setFilters}
-          onReset={() => setFilters({})}
-        />
+      <div className="flex gap-6">
+        {/* 메인 콘텐츠 영역 (왼쪽) */}
+        <div className="flex-1 space-y-6">
+          {/* Page Header */}
+          <div>
+            <h1 className="text-3xl font-bold">교원 현황</h1>
+            <p className="text-muted-foreground mt-2">
+              학과별 전임/초빙 교원 현황 분석
+            </p>
+          </div>
 
         {/* KPI Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -241,22 +233,61 @@ export default function FacultyStatusPage() {
           )}
         </ChartWrapper>
 
-        {/* Data Table */}
-        <ChartWrapper title="교원 현황 상세" isLoading={isLoading}>
-          {tableData && tableData.length > 0 ? (
-            <DataTable
-              columns={tableColumns}
-              data={tableData}
-              onSort={(columnId, direction) => {
-                // 정렬 로직 구현 (옵션)
-                console.log('Sort:', columnId, direction);
-              }}
+          {/* Data Table */}
+          <ChartWrapper title="교원 현황 상세" isLoading={isLoading}>
+            {tableData && tableData.length > 0 ? (
+              <DataTable
+                columns={tableColumns}
+                data={tableData}
+                onSort={(columnId, direction) => {
+                  // 정렬 로직 구현 (옵션)
+                  console.log('Sort:', columnId, direction);
+                }}
+              />
+            ) : (
+              <EmptyState title="데이터가 없습니다" />
+            )}
+          </ChartWrapper>
+        </div>
+
+        {/* 필터 패널 (오른쪽 고정) */}
+        <div className="w-80 flex-shrink-0">
+          <div className="sticky top-6">
+            <FacultyFilterSection
+              filters={filters}
+              onFilterChange={handleFilterChange}
+              onReset={handleReset}
             />
-          ) : (
-            <EmptyState title="데이터가 없습니다" />
-          )}
-        </ChartWrapper>
+          </div>
+        </div>
       </div>
     </DashboardLayout>
+  );
+}
+
+export default function FacultyStatusPage() {
+  return (
+    <Suspense
+      fallback={
+        <DashboardLayout>
+          <div className="flex gap-6">
+            <div className="flex-1 space-y-6">
+              <Skeleton className="h-12 w-64" />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[...Array(4)].map((_, i) => (
+                  <Skeleton key={i} className="h-32" />
+                ))}
+              </div>
+              <Skeleton className="h-64 w-full" />
+            </div>
+            <div className="w-80">
+              <Skeleton className="h-96" />
+            </div>
+          </div>
+        </DashboardLayout>
+      }
+    >
+      <FacultyStatusContent />
+    </Suspense>
   );
 }
