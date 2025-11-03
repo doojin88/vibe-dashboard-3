@@ -70,11 +70,11 @@ export function BudgetFilters({ filters, onFiltersChange }: BudgetFiltersProps) 
           <div className="space-y-2">
             <label className="text-sm font-medium">집행항목</label>
             <Select
-              value={filters.executionItem || ''}
+              value={filters.executionItem || 'all'}
               onValueChange={(value) =>
                 onFiltersChange({
                   ...filters,
-                  executionItem: value || undefined,
+                  executionItem: value === 'all' ? undefined : value,
                   page: 1,
                 })
               }
@@ -83,7 +83,7 @@ export function BudgetFilters({ filters, onFiltersChange }: BudgetFiltersProps) 
                 <SelectValue placeholder="전체" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">전체</SelectItem>
+                <SelectItem value="all">전체</SelectItem>
                 {executionItems.map((item) => (
                   <SelectItem key={item} value={item}>
                     {item}

@@ -53,7 +53,7 @@ export function EmploymentFilterPanel({ filters, onChange }: EmploymentFilterPan
   const handleCollegeChange = (value: string) => {
     onChange({
       ...filters,
-      college_names: value ? [value] : [],
+      college_names: value === 'all' ? [] : [value],
       department_names: [], // 단과대학 변경 시 학과 초기화
     });
   };
@@ -61,7 +61,7 @@ export function EmploymentFilterPanel({ filters, onChange }: EmploymentFilterPan
   const handleDepartmentChange = (value: string) => {
     onChange({
       ...filters,
-      department_names: value ? [value] : [],
+      department_names: value === 'all' ? [] : [value],
     });
   };
 
@@ -99,12 +99,12 @@ export function EmploymentFilterPanel({ filters, onChange }: EmploymentFilterPan
         {/* 단과대학 */}
         <div className="space-y-2">
           <Label htmlFor="college-select">단과대학</Label>
-          <Select value={currentCollege} onValueChange={handleCollegeChange}>
+          <Select value={currentCollege || 'all'} onValueChange={handleCollegeChange}>
             <SelectTrigger id="college-select">
               <SelectValue placeholder="전체" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">전체</SelectItem>
+              <SelectItem value="all">전체</SelectItem>
               {(filterOptions?.colleges || []).map((college) => (
                 <SelectItem key={college} value={college}>
                   {college}
@@ -118,7 +118,7 @@ export function EmploymentFilterPanel({ filters, onChange }: EmploymentFilterPan
         <div className="space-y-2">
           <Label htmlFor="dept-select">학과</Label>
           <Select
-            value={currentDepartment}
+            value={currentDepartment || 'all'}
             onValueChange={handleDepartmentChange}
             disabled={!currentCollege}
           >
@@ -126,7 +126,7 @@ export function EmploymentFilterPanel({ filters, onChange }: EmploymentFilterPan
               <SelectValue placeholder={currentCollege ? '전체' : '단과대학을 먼저 선택하세요'} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">전체</SelectItem>
+              <SelectItem value="all">전체</SelectItem>
               {(filterOptions?.departments || [])
                 .filter((dept) => !currentCollege || true) // 실제로는 단과대학별 필터링 필요
                 .map((dept) => (

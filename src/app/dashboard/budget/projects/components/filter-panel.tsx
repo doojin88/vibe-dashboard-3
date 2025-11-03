@@ -55,16 +55,16 @@ export function FilterPanel({ filters, onFilterChange }: FilterPanelProps) {
         <div className="space-y-2">
           <Label>연도</Label>
           <Select
-            value={filters.year?.toString() ?? ''}
+            value={filters.year?.toString() ?? 'all'}
             onValueChange={(value) =>
-              onFilterChange({ ...filters, year: value ? Number(value) : undefined })
+              onFilterChange({ ...filters, year: value === 'all' ? undefined : Number(value) })
             }
           >
             <SelectTrigger>
               <SelectValue placeholder="전체" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">전체</SelectItem>
+              <SelectItem value="all">전체</SelectItem>
               {filterOptions?.years.map((year: number) => (
                 <SelectItem key={year} value={year.toString()}>
                   {year}년
@@ -78,16 +78,16 @@ export function FilterPanel({ filters, onFilterChange }: FilterPanelProps) {
         <div className="space-y-2">
           <Label>학과</Label>
           <Select
-            value={filters.department_id ?? ''}
+            value={filters.department_id ?? 'all'}
             onValueChange={(value) =>
-              onFilterChange({ ...filters, department_id: value || undefined })
+              onFilterChange({ ...filters, department_id: value === 'all' ? undefined : value })
             }
           >
             <SelectTrigger>
               <SelectValue placeholder="전체" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">전체</SelectItem>
+              <SelectItem value="all">전체</SelectItem>
               {filterOptions?.departments.map((dept) => (
                 <SelectItem key={dept.id} value={dept.id}>
                   {dept.college_name} / {dept.department_name}
@@ -101,16 +101,16 @@ export function FilterPanel({ filters, onFilterChange }: FilterPanelProps) {
         <div className="space-y-2">
           <Label>지원기관</Label>
           <Select
-            value={filters.funding_agency ?? ''}
+            value={filters.funding_agency ?? 'all'}
             onValueChange={(value) =>
-              onFilterChange({ ...filters, funding_agency: value || undefined })
+              onFilterChange({ ...filters, funding_agency: value === 'all' ? undefined : value })
             }
           >
             <SelectTrigger>
               <SelectValue placeholder="전체" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">전체</SelectItem>
+              <SelectItem value="all">전체</SelectItem>
               {filterOptions?.funding_agencies.map((agency: string) => (
                 <SelectItem key={agency} value={agency}>
                   {agency}

@@ -24,7 +24,7 @@ export function FilterPanel({ filters, onFilterChange }: FilterPanelProps) {
   const yearOptions = getYearOptions(2020);
 
   const statusOptions = [
-    { label: '전체', value: '' },
+    { label: '전체', value: 'all' },
     { label: '집행완료', value: '집행완료' },
     { label: '처리중', value: '처리중' },
   ];
@@ -51,17 +51,17 @@ export function FilterPanel({ filters, onFilterChange }: FilterPanelProps) {
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <label className="text-sm font-medium">연도</label>
-          <Select
-            value={localFilters.year?.toString() || ''}
+            <Select
+            value={localFilters.year?.toString() || 'all'}
             onValueChange={(value) =>
-              setLocalFilters({ ...localFilters, year: value ? Number(value) : undefined })
+              setLocalFilters({ ...localFilters, year: value === 'all' ? undefined : Number(value) })
             }
           >
             <SelectTrigger>
               <SelectValue placeholder="전체" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">전체</SelectItem>
+              <SelectItem value="all">전체</SelectItem>
               {yearOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
@@ -74,11 +74,11 @@ export function FilterPanel({ filters, onFilterChange }: FilterPanelProps) {
         <div className="space-y-2">
           <label className="text-sm font-medium">진행 상태</label>
           <Select
-            value={localFilters.status || ''}
+            value={localFilters.status || 'all'}
             onValueChange={(value) =>
               setLocalFilters({
                 ...localFilters,
-                status: value ? (value as '집행완료' | '처리중') : undefined,
+                status: value === 'all' ? undefined : (value as '집행완료' | '처리중'),
               })
             }
           >
