@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { LayoutDashboard, Upload, FileText } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -26,8 +27,10 @@ export function FeaturesSection() {
     <section className="grid gap-6 md:grid-cols-3">
       {features.map((feature) => {
         const Icon = feature.icon;
-        return (
-          <Card key={feature.title} className="border-slate-700 bg-slate-900/60">
+        const isDashboard = feature.title === '대시보드 조회';
+        
+        const cardContent = (
+          <Card className={isDashboard ? "border-slate-700 bg-slate-900/60 cursor-pointer transition-all hover:bg-slate-900/80 hover:border-slate-600" : "border-slate-700 bg-slate-900/60"}>
             <CardHeader>
               <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-slate-800">
                 <Icon className="h-6 w-6 text-slate-200" />
@@ -40,6 +43,18 @@ export function FeaturesSection() {
               </CardDescription>
             </CardContent>
           </Card>
+        );
+        
+        return (
+          <div key={feature.title}>
+            {isDashboard ? (
+              <Link href="/dashboard" className="block">
+                {cardContent}
+              </Link>
+            ) : (
+              cardContent
+            )}
+          </div>
         );
       })}
     </section>
