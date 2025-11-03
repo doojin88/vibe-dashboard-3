@@ -23,7 +23,7 @@ export type ProjectWithBudgetInfo = {
     id: string;
     college_name: string;
     department_name: string;
-  };
+  } | null;
   funding_agency: string;
   total_budget: number;
   executed_amount: number; // 총 집행금액 (집계)
@@ -63,7 +63,7 @@ export type ExecutionsResponse = {
     department: {
       college_name: string;
       department_name: string;
-    };
+    } | null;
     funding_agency: string;
     total_budget: number;
     created_at: string;

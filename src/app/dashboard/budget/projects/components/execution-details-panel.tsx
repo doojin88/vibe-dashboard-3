@@ -88,8 +88,8 @@ export function ExecutionDetailsPanel({ projectId }: ExecutionDetailsPanelProps)
           <div>
             <p className="text-sm text-muted-foreground">소속학과</p>
             <p>
-              {data.project.department.college_name} /{' '}
-              {data.project.department.department_name}
+              {data.project.department?.college_name ?? '-'} /{' '}
+              {data.project.department?.department_name ?? '-'}
             </p>
           </div>
           <div>

@@ -47,8 +47,8 @@ export function ProjectsTable({
       과제번호: project.project_number,
       과제명: project.project_name,
       연구책임자: project.principal_investigator,
-      단과대학: project.department.college_name,
-      학과: project.department.department_name,
+      단과대학: project.department?.college_name ?? '-',
+      학과: project.department?.department_name ?? '-',
       지원기관: project.funding_agency,
       총연구비: project.total_budget,
       집행금액: project.executed_amount,
@@ -117,8 +117,8 @@ export function ProjectsTable({
                   </TableCell>
                   <TableCell>{project.principal_investigator}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {project.department.college_name} /{' '}
-                    {project.department.department_name}
+                    {project.department?.college_name ?? '-'} /{' '}
+                    {project.department?.department_name ?? '-'}
                   </TableCell>
                   <TableCell>{project.funding_agency}</TableCell>
                   <TableCell className="text-right font-medium">
