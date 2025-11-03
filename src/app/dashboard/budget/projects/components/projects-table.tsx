@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, Fragment } from 'react';
 import {
   Table,
   TableBody,
@@ -96,9 +96,8 @@ export function ProjectsTable({
           </TableHeader>
           <TableBody>
             {projects.map((project) => (
-              <>
+              <Fragment key={project.id}>
                 <TableRow
-                  key={project.id}
                   className="cursor-pointer hover:bg-muted/50"
                   onClick={() => handleRowClick(project.id)}
                 >
@@ -138,7 +137,7 @@ export function ProjectsTable({
                     </TableCell>
                   </TableRow>
                 )}
-              </>
+              </Fragment>
             ))}
           </TableBody>
         </Table>
