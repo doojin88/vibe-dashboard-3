@@ -24,7 +24,7 @@ const ImpactFactorTrendChartInternal = dynamic(
       function ImpactFactorTrendChartComponent({
         chartData,
       }: {
-        chartData: Array<{ year: string; avg_impact_factor: string }>;
+        chartData: Array<{ year: number; avg_impact_factor: string }>;
       }) {
         return (
           <ResponsiveContainer width="100%" height={300}>
